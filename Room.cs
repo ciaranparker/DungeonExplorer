@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace DungeonExplorer
 {
@@ -12,17 +14,25 @@ namespace DungeonExplorer
         /// a string called description is created so that it can be used
         /// </remarks>
         private string description;
+        public string GoldenSword { get; private set; }
+        public string BowAndArrow { get; private set; }
+        public string Axe { get; private set; }
+
+
 
         /// <param name="description">
         /// the description of the room
         /// </param>
-        public Room(string description)
+        public Room(string description, string item1, string item2, string item3)
         {
             ///<remarks>
             ///the current string description will be whatever the parameter for the
             ///initialization of the class is
             /// </remarks>
             this.description = description;
+            GoldenSword = item1;
+            BowAndArrow = item2;
+            Axe = item3;
         }
 
         /// <summary>
@@ -36,7 +46,6 @@ namespace DungeonExplorer
         {
             return description;
         }
-
 
     }
 }

@@ -79,7 +79,8 @@ namespace DungeonExplorer
             ///an enemy is created by initializing a new instance of the player class with a name and 50 health
             ///</remarks>
             Console.WriteLine($"Welcome {player.Name}");
-            currentRoom = new Room("The room is cold and dark, with goblins crawling everywhere");
+            currentRoom = new Room("The room is cold and dark, with goblins crawling everywhere", 
+                "A golden sword", "A bow and arrow", "Axe");
             enemy = new Player("goblin", 50); 
         }
             
@@ -104,8 +105,6 @@ namespace DungeonExplorer
             while (playing)
             {
                 
-                string item;
-
                 ///<summary>
                 ///while the boolean lootingRoom is true the code logic in the loop will run
                 /// </summary>
@@ -126,8 +125,7 @@ namespace DungeonExplorer
                         {
                             Console.WriteLine("Moving to the right");
                             Console.WriteLine("You have found a golden sword");
-                            item = "A golden sword";
-                            player.PickUpItem(item);
+                            player.PickUpItem(currentRoom.GoldenSword);
                             Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
                             lootingRoom = false;
                         }
@@ -136,8 +134,7 @@ namespace DungeonExplorer
                         {
                             Console.WriteLine("Moving to the left");
                             Console.WriteLine("You have found a bow and arrow");
-                            item = "A bow and arrow";
-                            player.PickUpItem(item);
+                            player.PickUpItem(currentRoom.BowAndArrow);
                             Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
                             lootingRoom = false;
                         }
@@ -146,8 +143,7 @@ namespace DungeonExplorer
                         {
                             Console.WriteLine("Moving forwards");
                             Console.WriteLine("You have found an axe");
-                            item = "Axe";
-                            player.PickUpItem("Axe");
+                            player.PickUpItem(currentRoom.Axe);
                             Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
                             lootingRoom = false;
                         }
