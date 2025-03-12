@@ -23,7 +23,8 @@ namespace DungeonExplorer
         /// <param name="description">
         /// the description of the room
         /// </param>
-        public Room(string description, string item1, string item2, string item3)
+        public Room(string description, string item1, 
+            string item2, string item3)
         {
             ///<remarks>
             ///the current string description will be whatever the parameter for the

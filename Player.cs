@@ -11,8 +11,8 @@ namespace DungeonExplorer
     {
         /// <summary>
         /// the name can be accessed by other files but cannot be changed in other files,
-        /// the health can be accessed and changed by other files, allowing health to increase or decrease
-        /// in the main game code
+        /// the health can be accessed and changed by other files, 
+        /// allowing health to increase or decrease in the main game code
         /// </summary>
         public string Name { get; private set; } 
         public int Health { get; set; }

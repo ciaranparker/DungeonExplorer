@@ -15,7 +15,6 @@ namespace DungeonExplorer
     {
         private Player player;
         private Player enemy;
-
         private Room currentRoom;
         private Test test;
        
@@ -27,7 +26,6 @@ namespace DungeonExplorer
             /// an instance of the test is initialized so that the class can be used
             test = new Test();
             
-        
             ///while the boolean inOptions is true the user can enter a username
             bool inOptions = true;
 
@@ -45,8 +43,6 @@ namespace DungeonExplorer
                     ///<param name="health">The health the player has</param>
                     player = new Player(playerUsername, 100);
 
-                    
-
                     if (playerUsername.Length == 0)
                     {
                         /// <remarks>
@@ -54,7 +50,7 @@ namespace DungeonExplorer
                         /// the TestMethod function will then run, displaying the error
                         /// </remarks>
                         Debug.Assert(playerUsername.Length != 0, test.TestMethod());
-                        throw new NullReferenceException("No name entered, please try again");
+                        throw new ArgumentNullException("No name entered, please try again");
                     }
                     
                     /// <remarks>
@@ -65,18 +61,17 @@ namespace DungeonExplorer
                     {
                         break;
                     }
-
                 }
 
-                catch (NullReferenceException ex)
+                catch (ArgumentNullException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
             }
-            
             ///<remarks>
-            ///the player name is displayed and the room is initialized with a description,
-            ///an enemy is created by initializing a new instance of the player class with a name and 50 health
+            ///The player name is displayed and the room is initialized
+            ///with a description and 3 items,an enemy is created by initializing 
+            ///a new instance of the player class with a name and 50 health
             ///</remarks>
             Console.WriteLine($"Welcome {player.Name}");
             currentRoom = new Room("The room is cold and dark, with goblins crawling everywhere", 
@@ -85,7 +80,8 @@ namespace DungeonExplorer
         }
             
         /// <summary>
-        /// this method runs code logic for when the player has started playing the game
+        /// this method runs code logic for when the player 
+        /// has started playing the game
         /// </summary>
         public void Start()
         {
@@ -97,58 +93,58 @@ namespace DungeonExplorer
             Console.WriteLine(currentRoom.GetDescription());
             Console.WriteLine("You can enter 'M' to view the description at any time");
             
-
             ///<summary>
             ///while the boolean playing is true the code logic in the loop will run
             /// </summary>
             bool playing = true;
             while (playing)
             {
-                
                 ///<summary>
-                ///while the boolean lootingRoom is true the code logic in the loop will run
+                ///while the boolean lootingRoom is true the 
+                ///code logic in the loop will run
                 /// </summary>
                 bool lootingRoom = true;
                 while (lootingRoom)
                 {
-                    
-
                     try
                     {
                         ///<summary>
                         ///if there is an ArgumentOutOfRange exception in the try code it will
                         ///be detected and the code in the catch will run
-                        /// </summary>
-                        Console.WriteLine("Press A to move right, D to move left or W to move forward");
+                        /// </summary>                     
+                        Console.WriteLine("Press: \nA to move right \nD to move left \nW to move forward");
                         string userMoveInput = Console.ReadLine();
-                        if (userMoveInput == "A")
+                        if (userMoveInput == "A" || userMoveInput == "a")
                         {
                             Console.WriteLine("Moving to the right");
                             Console.WriteLine("You have found a golden sword");
                             player.PickUpItem(currentRoom.GoldenSword);
-                            Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
+                            Console.WriteLine($"The contents of your inventory are: " +
+                                $"\n{player.InventoryContents()}");
                             lootingRoom = false;
                         }
 
-                        else if (userMoveInput == "D")
+                        else if (userMoveInput == "D" || userMoveInput == "d")
                         {
                             Console.WriteLine("Moving to the left");
                             Console.WriteLine("You have found a bow and arrow");
                             player.PickUpItem(currentRoom.BowAndArrow);
-                            Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
+                            Console.WriteLine($"The contents of your inventory are: " +
+                                $"\n{player.InventoryContents()}");
                             lootingRoom = false;
                         }
 
-                        else if (userMoveInput == "W")
+                        else if (userMoveInput == "W" || userMoveInput == "w")
                         {
                             Console.WriteLine("Moving forwards");
                             Console.WriteLine("You have found an axe");
                             player.PickUpItem(currentRoom.Axe);
-                            Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
+                            Console.WriteLine($"The contents of your inventory are: " +
+                                $"\n{player.InventoryContents()}");
                             lootingRoom = false;
                         }
 
-                        else if (userMoveInput == "M")
+                        else if (userMoveInput == "M" || userMoveInput == "m")
                         {
                             Console.WriteLine(currentRoom.GetDescription());
                         }
@@ -156,7 +152,6 @@ namespace DungeonExplorer
                         else
                         {
                             Debug.Assert(userMoveInput.Length != 0, test.TestMethod());
-
                             ///<exception cref="ArgumentOutOfRangeException">
                             ///if the user input is not A, D or W an argument out of range
                             ///exception will be thrown
@@ -174,7 +169,6 @@ namespace DungeonExplorer
                     }
                 }
 
-                    
                 ///<summary>
                 ///a message will be displayed that the enemy is is approaching,
                 ///the name of the enemy will be displayed
@@ -190,13 +184,15 @@ namespace DungeonExplorer
 
                 try
                 {
-                    if (viewInventory == "I")
+                    if (viewInventory == "I" || viewInventory == "i")
                     {
                         ///<remarks>
-                        ///if the user enters 'I' the inventory will be displayed, otherwise an exception
-                        ///will be throwm and the exception message will be displayed
+                        ///if the user enters 'I' the inventory will be displayed, 
+                        ///otherwise an exception will be throwm and the exception 
+                        ///message will be displayed
                         /// </remarks>
-                        Console.WriteLine($"The contents of your inventory are: {player.InventoryContents()}");
+                        Console.WriteLine($"The contents of your inventory are: " +
+                            $"\n{player.InventoryContents()}");
                         Console.WriteLine($"To attack the {enemy.Name} you must enter 'F'");
                     }
 
@@ -204,7 +200,6 @@ namespace DungeonExplorer
                     {
                         throw new Exception($"To attack the {enemy.Name} you must enter 'F'");
                     }
-
                 }
 
                 catch (Exception ex)
@@ -218,7 +213,6 @@ namespace DungeonExplorer
                 
                 bool battle = true;
                 
-
                 while (battle)
                 {
                     ///<remarks>
@@ -235,7 +229,6 @@ namespace DungeonExplorer
                     ///the value of the enemy damage will be subtracted from the health of the player
                     /// </remarks>
                     player.Health -= enemyDamage;
-
 
                     ///<remarks>
                     ///if the health of the player is above 0 their name and health will be displayed
@@ -258,7 +251,6 @@ namespace DungeonExplorer
                         break;
                     }
 
-
                     ///<summary>
                     ///This code carries out the same as the aboove code in the battle loop, however a 
                     ///try catch is used as it requests input from the user to battle the enemy.
@@ -269,9 +261,8 @@ namespace DungeonExplorer
                         int playerDamage = playerRandomAttack.Next(10, 20);
                         string playerAttackInput = Console.ReadLine();
 
-                        if (playerAttackInput == "F")
+                        if (playerAttackInput == "F" || playerAttackInput == "f")
                         {
-
 
                             enemy.Health -= playerDamage;
 
@@ -280,14 +271,12 @@ namespace DungeonExplorer
                                 Console.WriteLine($"{enemy.Name} current health is {enemy.Health}");
                             }
 
-
                             else if (enemy.Health <= 0)
                             {
                                 Console.WriteLine($"{enemy.Name} has died, you win");
                                 playing = false;
                                 break;
                             }
-
                         }
 
                         else

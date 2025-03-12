@@ -20,8 +20,9 @@ namespace DungeonExplorer
             {
                 Console.WriteLine("Welcome to dungeon explorer");
                 ///<remarks>
-                ///a new instance of the game class is initialized causing the code in the class to run,
-                ///the start method in the game class is called so that the code in the start method runs
+                ///a new instance of the game class is initialized 
+                ///causing the code in the class to run, the start method in the game class
+                ///is called so that the code in the start method runs
                 /// </remarks>
                 Game game = new Game();
                 game.Start();
