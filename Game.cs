@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Media;
 using System.Runtime.CompilerServices;
@@ -7,56 +8,54 @@ using System.Xml.Linq;
 
 namespace DungeonExplorer
 {
-    /// <summary>
-    /// coding logic where in ther user can interract with the main game,
-    /// instances are created for each of the required classes in the game
-    /// </summary>
     internal class Game
     {
         private Player player;
-        private Player enemy;
-        private Room currentRoom;
+        private Monster goblin;
+        private Monster skeleton;
+        private Monster ogre;
+        private Monster dragon;
+        private Room startingRoom;
+        private Room roomA;
+        private Room roomB;
+        private Room roomC;
+        private Room roomD;
+        private Room roomE;
+        private Room finalRoom;
+        private Inventory playerInventory;
+        private Inventory monsterInventory;
+        private Heals healthPotion;
+        private Melee sword;
+        private Melee axe;
+        private LongRange fireBall;
+        private LongRange bowAndArrow;
         private Test test;
-       
-        /// <summary>
-        /// The main game is initialized so that the class can be used,
-        /// </summary>
+        private Statistics statistics;
+        bool skeletonDead = false;
+        bool goblinDead = false;
+        bool ogreDead = false;
+        bool dragonDead = false;
+
         public Game()
         {
-            /// an instance of the test is initialized so that the class can be used
             test = new Test();
-            
-            ///while the boolean inOptions is true the user can enter a username
+
             bool inOptions = true;
 
             while (inOptions = true)
             {
-                ///<exception cref="NullReferenceException">
-                ///if the user does not enter an input this exception will be thrown,
-                ///the message will then be displayed in the terminal
-                /// </exception>
                 try
                 {
                     Console.WriteLine("Please enter a username: ");
                     string playerUsername = Console.ReadLine();
-                    ///<param name="name">the name of the player</param>
-                    ///<param name="health">The health the player has</param>
-                    player = new Player(playerUsername, 100);
+                    player = new Player(playerUsername, 100, 0, 0, 0, 0);
 
                     if (playerUsername.Length == 0)
                     {
-                        /// <remarks>
-                        /// if the username is eaqual to 0 an error will be detected,
-                        /// the TestMethod function will then run, displaying the error
-                        /// </remarks>
                         Debug.Assert(playerUsername.Length != 0, test.TestMethod());
                         throw new ArgumentNullException("No name entered, please try again");
                     }
-                    
-                    /// <remarks>
-                    /// if the username is longer than 0 the while loop will stop,
-                    /// moving on to the next code outside of the loop
-                    /// </remarks>
+
                     if (playerUsername.Length > 0)
                     {
                         break;
@@ -68,235 +67,341 @@ namespace DungeonExplorer
                     Console.WriteLine(ex.Message);
                 }
             }
-            ///<remarks>
-            ///The player name is displayed and the room is initialized
-            ///with a description and 3 items,an enemy is created by initializing 
-            ///a new instance of the player class with a name and 50 health
-            ///</remarks>
             Console.WriteLine($"Welcome {player.Name}");
-            currentRoom = new Room("The room is cold and dark, with goblins crawling everywhere", 
-                "A golden sword", "A bow and arrow", "Axe");
-            enemy = new Player("goblin", 50); 
+            startingRoom = new Room("Starting Room", false, false, "starting room", "A cold and dark empty room",
+                "There are no enemies in this room");
+            roomA = new Room("Room A", false, false, "combat room", "A room covered in bones and skulls",
+                "There is 1 skeleton in the room");
+            roomB = new Room("Room B", false, false, "combat room", "A room with loud laughing and growling sounds",
+                "There is 1 goblin in the room");
+            roomC = new Room("Room C", false, true, "mini boss room", "A room made of cobblestone with a huge door",
+                "There is a mini boss in the room");
+            finalRoom = new Room("Final Room", false, true, "boss room", "A room surrounded by a pool of lava",
+                "There is 1 dragon boss in the room");
+            goblin = new Monster("Goblin", 50, 10, "Regular", "Sword Attack", 20);
+            skeleton = new Monster("Skeleton", 60, 20, "Regular", "Bow and Arrow Attack", 30);
+            ogre = new Monster("Ogre", 80, 50, "Mini Boss", "Punch Attack", 40);
+            dragon = new Monster("Dragon", 95, 75, "Boss", "Fire Breath Attack", 60);
+            healthPotion = new Heals("Health Potion", "This item increases health points", 1, "Heal item", 80);
+            sword = new Melee("Sword", "This is a melee item", 10, "Melee item", "Fire effect", 20);
+            axe = new Melee("Axe", "This is a melee item", 15, "Melee item", "No effect", 30);
+            fireBall = new LongRange("Fire Ball", "This is a long range item", 3, "Long Range item",
+                10, 3);
+            bowAndArrow = new LongRange("Bow And Arrow", "This is a long range item", 10, "Long Range item",
+                5, 5);
+            playerInventory = new Inventory();
+            monsterInventory = new Inventory();
+            statistics = new Statistics(player.NumberOfCoins);
         }
-            
-        /// <summary>
-        /// this method runs code logic for when the player 
-        /// has started playing the game
-        /// </summary>
+
         public void Start()
         {
-            ///<remarks>
-            ///the GetDescription function for the room class will run, 
-            ///displaying the description set
-            /// </remarks>
-            Console.WriteLine("Entering Dungeon...");
-            Console.WriteLine(currentRoom.GetDescription());
-            Console.WriteLine("You can enter 'M' to view the description at any time");
-            
-            ///<summary>
-            ///while the boolean playing is true the code logic in the loop will run
-            /// </summary>
-            bool playing = true;
-            while (playing)
+            bool playing = false;
+
+            playing = true;
+            while (playing == true)
             {
-                ///<summary>
-                ///while the boolean lootingRoom is true the 
-                ///code logic in the loop will run
-                /// </summary>
-                bool lootingRoom = true;
-                while (lootingRoom)
+                startingRoom.EnterRoom();
+                sword.Collected();
+                playerInventory.AddItem($"{sword.ItemName}", $"{sword.ItemType}");
+                playerInventory.AddItem($"{healthPotion.ItemName}", $"{healthPotion.ItemType}");
+
+                Console.WriteLine($"There are 3 doors in front of you, enter one of the following keys \n" +
+                    $"Room A: A\n" +
+                    $"Room B: B\n" +
+                    $"Room C: C\n");
+
+                bool choosingRoom = true;
+                while (choosingRoom == true)
                 {
-                    try
+                    string userInput = Console.ReadLine();
+                    if (userInput == "A")
                     {
-                        ///<summary>
-                        ///if there is an ArgumentOutOfRange exception in the try code it will
-                        ///be detected and the code in the catch will run
-                        /// </summary>                     
-                        Console.WriteLine("Press: \nA to move right \nD to move left \nW to move forward");
-                        string userMoveInput = Console.ReadLine();
-                        if (userMoveInput == "A" || userMoveInput == "a")
+                        roomA.EnterRoom();
+
+
+                        if (skeletonDead == true)
                         {
-                            Console.WriteLine("Moving to the right");
-                            Console.WriteLine("You have found a golden sword");
-                            player.PickUpItem(currentRoom.GoldenSword);
-                            Console.WriteLine($"The contents of your inventory are: " +
-                                $"\n{player.InventoryContents()}");
-                            lootingRoom = false;
+                            Console.WriteLine("Please choose room B or C");
+                            continue;
                         }
 
-                        else if (userMoveInput == "D" || userMoveInput == "d")
+                        bool battle = true;
+                        while (battle == true)
                         {
-                            Console.WriteLine("Moving to the left");
-                            Console.WriteLine("You have found a bow and arrow");
-                            player.PickUpItem(currentRoom.BowAndArrow);
-                            Console.WriteLine($"The contents of your inventory are: " +
-                                $"\n{player.InventoryContents()}");
-                            lootingRoom = false;
+                            string userInput2 = Console.ReadLine();
+                            if (userInput2 == "X" || userInput2 == "x")
+                            {
+                                player.Attack(skeleton, sword.ItemDamage);
+                                if (skeleton.Health <= 0)
+                                {
+                                    player.GainXP(50);
+                                    player.PickUpCoins(true, skeleton.NumberOfCoins);
+                                    Console.WriteLine($"There is a {fireBall.ItemName} on the ground");
+                                    playerInventory.AddItem(fireBall.ItemName, fireBall.ItemType);
+                                    Console.WriteLine($"Would you like to use {healthPotion.ItemName}\n" +
+                                        $"press H to use {healthPotion.ItemName}");
+                                    string userInput3 = Console.ReadLine();
+                                    if (userInput3 == "h" || userInput3 == "H")
+                                    {
+                                        playerInventory.GetItemType(healthPotion.ItemType);
+                                        Console.WriteLine($"Healing by {healthPotion.HealthIncrease}...");
+                                        player.Health += healthPotion.HealthIncrease;
+                                        if (player.Health > 100)
+                                        {
+                                            player.Health = 100;
+                                        }
+                                        Console.WriteLine($"{player.Name} current health is {player.Health}");
+                                    }
+
+                                    else
+                                    {
+                                        Console.WriteLine("You did not heal");
+                                    }
+
+                                    Console.WriteLine($"Please choose the next room to enter \n" +
+                                        $"Room B: B\n" +
+                                        $"Room C: C");
+                                    skeletonDead = true;
+                                    battle = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    skeleton.Attack(player, skeleton.MonsterStrength);
+                                }
+                            }
+
+                            else
+                            {
+                                Console.WriteLine($"{player.Name} did not attack");
+                                skeleton.Attack(player, skeleton.MonsterStrength);
+                                if (player.Health <= 0)
+                                {
+                                    choosingRoom = false;
+                                    playing = false;
+                                    break;
+                                }
+                            }
+
                         }
 
-                        else if (userMoveInput == "W" || userMoveInput == "w")
+
+
+                    }
+                    else if (userInput == "B")
+                    {
+                        roomB.EnterRoom();
+                        if (goblinDead == true)
                         {
-                            Console.WriteLine("Moving forwards");
-                            Console.WriteLine("You have found an axe");
-                            player.PickUpItem(currentRoom.Axe);
-                            Console.WriteLine($"The contents of your inventory are: " +
-                                $"\n{player.InventoryContents()}");
-                            lootingRoom = false;
+                            Console.WriteLine("Please choose room A or C");
+                            continue;
                         }
 
-                        else if (userMoveInput == "M" || userMoveInput == "m")
+                        bool battle = true;
+                        while (battle == true)
                         {
-                            Console.WriteLine(currentRoom.GetDescription());
+                            string userInput2 = Console.ReadLine();
+                            if (userInput2 == "X" || userInput2 == "x")
+                            {
+                                player.Attack(goblin, fireBall.ItemDamage);
+                                if (goblin.Health <= 0)
+                                {
+                                    roomC.UnlockRoom();
+                                    player.GainXP(50);
+                                    player.PickUpCoins(true, goblin.NumberOfCoins);
+                                    Console.WriteLine($"There is a {bowAndArrow.ItemName} on the ground");
+                                    playerInventory.AddItem(bowAndArrow.ItemName, bowAndArrow.ItemType);
+                                    Console.WriteLine($"Would you like to use {healthPotion.ItemName}\n" +
+                                        $"press H to use {healthPotion.ItemName}");
+                                    string userInput3 = Console.ReadLine();
+                                    if (userInput3 == "h" || userInput3 == "H")
+                                    {
+                                        playerInventory.GetItemType(healthPotion.ItemType);
+                                        playerInventory.GetItemType(healthPotion.ItemType);
+                                        Console.WriteLine($"Healing by {healthPotion.HealthIncrease}...");
+                                        player.Health += healthPotion.HealthIncrease;
+                                        if (player.Health > 100)
+                                        {
+                                            player.Health = 100;
+                                        }
+                                        Console.WriteLine($"{player.Name} current health is {player.Health}");
+                                    }
+
+                                    else
+                                    {
+                                        Console.WriteLine("You did not heal");
+                                    }
+                                    Console.WriteLine($"{roomC} has unlocked");
+                                    Console.WriteLine($"Please choose the next room to enter \n" +
+                                        $"Room A: A\n" +
+                                        $"Room C: C");
+                                    goblinDead = true;
+                                    battle = false;
+
+                                    break;
+                                }
+                                else
+                                {
+                                    goblin.Attack(player, goblin.MonsterStrength);
+                                }
+                            }
+
+                            else
+                            {
+                                Console.WriteLine($"{player.Name} did not attack");
+                                goblin.Attack(player, goblin.MonsterStrength);
+                                if (player.Health <= 0)
+                                {
+                                    choosingRoom = false;
+                                    playing = false;
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                    else if (userInput == "C")
+                    {
+                        roomC.EnterRoom();
+
+                        if (ogreDead == true)
+                        {
+                            Console.WriteLine("Please choose room A or C");
+                            continue;
                         }
 
-                        else
+                        bool battle = true;
+                        while (battle == true)
                         {
-                            Debug.Assert(userMoveInput.Length != 0, test.TestMethod());
-                            ///<exception cref="ArgumentOutOfRangeException">
-                            ///if the user input is not A, D or W an argument out of range
-                            ///exception will be thrown
-                            /// </exception>
-                            throw new ArgumentOutOfRangeException("Please enter A, D or W to move");
+                            string userInput2 = Console.ReadLine();
+                            if (userInput2 == "X" || userInput2 == "x")
+                            {
+                                player.Attack(ogre, bowAndArrow.ItemDamage);
+                                if (ogre.Health <= 0)
+                                {
+                                    player.GainXP(50);
+                                    player.PickUpCoins(true, ogre.NumberOfCoins);
+                                    Console.WriteLine($"Would you like to use {healthPotion.ItemName}\n" +
+                                        $"press H to use {healthPotion.ItemName}");
+                                    string userInput3 = Console.ReadLine();
+                                    if (userInput3 == "h" || userInput3 == "H")
+                                    {
+                                        playerInventory.GetItemType(healthPotion.ItemType);
+                                        Console.WriteLine($"Healing by {healthPotion.HealthIncrease}...");
+                                        player.Health += healthPotion.HealthIncrease;
+                                        if (player.Health > 100)
+                                        {
+                                            player.Health = 100;
+                                        }
+                                        Console.WriteLine($"{player.Name} current health is {player.Health}");
+                                    }
+
+                                    else
+                                    {
+                                        Console.WriteLine("You did not heal");
+                                    }
+                                    finalRoom.UnlockRoom();
+                                    Console.WriteLine($"You can now enter the final room, press E to enter");
+                                    ogreDead = true;
+                                    battle = false;
+
+                                    break;
+                                }
+                                else
+                                {
+                                    ogre.Attack(player, ogre.MonsterStrength);
+                                }
+                            }
+
+                            else
+                            {
+                                Console.WriteLine($"{player.Name} did not attack");
+                                ogre.Attack(player, ogre.MonsterStrength);
+                                if (player.Health <= 0)
+                                {
+                                    choosingRoom = false;
+                                    playing = false;
+                                    break;
+                                }
+                            }
+
                         }
                     }
 
-                    catch (ArgumentOutOfRangeException ex)
+
+                    else if (userInput == "E")
                     {
-                        ///<remarks>
-                        ///if the exception is thrown the exception message will be displayed
-                        /// </remarks>
-                        Console.WriteLine(ex.Message);
+                        finalRoom.EnterRoom();
+                        if (dragonDead == true)
+                        {
+                            Console.WriteLine("Gaame over");
+                        }
+
+                        bool battle = true;
+                        while (battle == true)
+                        {
+                            string userInput2 = Console.ReadLine();
+                            if (userInput2 == "X" || userInput2 == "x")
+                            {
+
+
+
+                                player.Attack(dragon, axe.ItemDamage);
+                                if (dragon.Health <= 0)
+                                {
+                                    player.GainXP(50);
+                                    player.PickUpCoins(true, dragon.NumberOfCoins);
+                                    dragonDead = true;
+                                    statistics.CalculateAverageCoins(goblin.NumberOfCoins, skeleton.NumberOfCoins,
+                                        ogre.NumberOfCoins, dragon.NumberOfCoins, player.NumberOfCoins);
+
+                                    choosingRoom = false;
+                                    playing = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    dragon.Attack(player, dragon.MonsterStrength);
+                                }
+                            }
+
+                            else
+                            {
+                                Console.WriteLine($"{player.Name} did not attack");
+                                dragon.Attack(player, dragon.MonsterStrength);
+                                if (player.Health <= 0)
+                                {
+                                    choosingRoom = false;
+                                    playing = false;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                }
 
-                ///<summary>
-                ///a message will be displayed that the enemy is is approaching,
-                ///the name of the enemy will be displayed
-                /// </summary>
-
-                Console.WriteLine($"a {enemy.Name} is approaching...");
-
-                ///<summary>
-                ///the user can enter an input after being prompted to view their inventory
-                /// </summary>
-                Console.WriteLine("Press 'I' to view inventory, press any other key to ignore");
-                string viewInventory = Console.ReadLine();
-
-                try
-                {
-                    if (viewInventory == "I" || viewInventory == "i")
-                    {
-                        ///<remarks>
-                        ///if the user enters 'I' the inventory will be displayed, 
-                        ///otherwise an exception will be throwm and the exception 
-                        ///message will be displayed
-                        /// </remarks>
-                        Console.WriteLine($"The contents of your inventory are: " +
-                            $"\n{player.InventoryContents()}");
-                        Console.WriteLine($"To attack the {enemy.Name} you must enter 'F'");
-                    }
 
                     else
                     {
-                        throw new Exception($"To attack the {enemy.Name} you must enter 'F'");
-                    }
-                }
-
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-
-                ///<summary>
-                ///while the boolean battle is true the code in the while loop will run
-                /// </summary>
-                
-                bool battle = true;
-                
-                while (battle)
-                {
-                    ///<remarks>
-                    ///the enemyRandomAttack is initialized using the random class,
-                    ///this means a random value can be assigned
-                    /// </remarks>
-                    Random enemyRandomAttack = new Random();
-                    ///<remarks>
-                    ///the value of enemy attack will be a random integer between 10 and 30
-                    /// </remarks>
-                    int enemyDamage = enemyRandomAttack.Next(10, 30);
-                    Console.WriteLine("The goblin has attacked");
-                    ///<remarks>
-                    ///the value of the enemy damage will be subtracted from the health of the player
-                    /// </remarks>
-                    player.Health -= enemyDamage;
-
-                    ///<remarks>
-                    ///if the health of the player is above 0 their name and health will be displayed
-                    /// </remarks>
-                    if (player.Health > 0)
-                    {
-                        Console.WriteLine($"{player.Name} current health is {player.Health}");
+                        Console.WriteLine("Please choose an appropriate room");
                     }
 
-                    ///<remarks>
-                    ///if the players health is 0 or below the user will be prompted to enter any key,
-                    ///after doing so the playing and battle loops will stop, returning to the main program
-                    /// </remarks>
-                    else if (player.Health <= 0)
+                    if (player.Health <= 0)
                     {
-                        Console.WriteLine("You died, Game Over");
-                        Console.WriteLine("Press any key to exit");
-                        Console.ReadKey();
+                        statistics.CalculateAverageCoins(goblin.NumberOfCoins, skeleton.NumberOfCoins,
+                                        ogre.NumberOfCoins, dragon.NumberOfCoins, player.NumberOfCoins);
                         playing = false;
-                        break;
                     }
 
-                    ///<summary>
-                    ///This code carries out the same as the aboove code in the battle loop, however a 
-                    ///try catch is used as it requests input from the user to battle the enemy.
-                    ///</summary>
-                    try
-                    {
-                        Random playerRandomAttack = new Random();
-                        int playerDamage = playerRandomAttack.Next(10, 20);
-                        string playerAttackInput = Console.ReadLine();
 
-                        if (playerAttackInput == "F" || playerAttackInput == "f")
-                        {
-
-                            enemy.Health -= playerDamage;
-
-                            if (enemy.Health > 0)
-                            {
-                                Console.WriteLine($"{enemy.Name} current health is {enemy.Health}");
-                            }
-
-                            else if (enemy.Health <= 0)
-                            {
-                                Console.WriteLine($"{enemy.Name} has died, you win");
-                                playing = false;
-                                break;
-                            }
-                        }
-
-                        else
-                        {
-                            ///<exception cref="NullReferenceException">
-                            ///there was incorrect input and so the exception is thrown
-                            ///</exception>
-                            throw new NullReferenceException("You did not attack");
-                        }
-                    }
-
-                    catch (NullReferenceException ex)
-                    {
-                        ///<remarks>
-                        ///the exception message is displayed
-                        /// </remarks>
-                        Console.WriteLine(ex.Message);
-                    }
                 }
+
+
+
+                break;
             }
         }
     }
+
+
 }

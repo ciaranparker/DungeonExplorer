@@ -4,61 +4,73 @@ using System.Configuration;
 
 namespace DungeonExplorer
 {
-    /// <summary>
-    /// the main coding logic  player, allowing important features to be defined
-    /// </summary>
-    public class Player
+    public class Player : Creatures, IDamagable
     {
-        /// <summary>
-        /// the name can be accessed by other files but cannot be changed in other files,
-        /// the health can be accessed and changed by other files, 
-        /// allowing health to increase or decrease in the main game code
-        /// </summary>
-        public string Name { get; private set; } 
-        public int Health { get; set; }
-        /// <summary>
-        /// the inventory is a list of strings
-        /// </summary>
-        private List<string> inventory = new List<string>();
+        public int NumberOfRoomsEntered { get; set; }
+        public int PlayerXp { get; set; }
+        public int PlayerLevel { get; set; }
 
-        /// <summary>
-        /// an instance of the player is initialized
-        /// </summary>
-        /// <param name="name">
-        /// the name of the player
-        /// </param>
-        /// <param name="health">
-        /// the health which the player is assigned
-        /// </param>
-        public Player(string name, int health) 
+
+        public Player(string name, int health, int numberOfCoins, int numberOfRoomsEntered, int playerXp, int playerLevel)
+            : base(name, health, numberOfCoins) 
         {
-            Name = name;
-            Health = health;
+            NumberOfRoomsEntered = numberOfRoomsEntered;
+            PlayerXp = playerXp;
+            PlayerLevel = playerLevel;
         }
 
-        /// <summary>
-        /// an item is picked up and saved to the inventory list, a message is
-        /// also displayed showing what item was added to the inventory
-        /// </summary>
-        /// <param name="item">
-        /// the name of them item which the user has picked up
-        /// </param>
-        public void PickUpItem(string item)
+        public void Damaged(int damageTaken)
         {
-            Console.WriteLine("Picking up item...");
-            inventory.Add(item);
-            Console.WriteLine($"{item} added to inventory");
+            Health -= damageTaken;
+            Console.WriteLine($"{Name} has taken {damageTaken} damage");
+            if (Health <= 0)
+            {
+                Health = 0;
+                Console.WriteLine($"{Name} has reached {Health} health. You have died");
+                Console.WriteLine($"You had {NumberOfCoins} coins");
+                Console.WriteLine($"You had {PlayerXp} XP");
+            }
+            Console.WriteLine($"{Name} current health is {Health}");
         }
 
-        /// <summary>
-        /// this method displays the items in the inventory, seperated by a comma
-        /// </summary>
-        /// <returns>
-        /// the inventory list, each element of the list is seperated by a comma
-        /// </returns>
-        public string InventoryContents()
+        public override void Attack(IDamagable attacked, int damageTaken)
         {
-            return string.Join(", ", inventory);
+            if (attacked is Creatures target)
+            {
+                Console.WriteLine($"{Name} has attacked {target.Name}");
+            }
+            
+            attacked.Damaged(damageTaken);
+        }
+
+        public override void Defense(bool defended, int damage, int damageReduction, int damageTaken)
+        {
+            if (defended == true)
+            {
+                Console.WriteLine($"{Name} has defended \n" +
+                    $"{damage} reduced by {damageReduction}");
+                damageTaken = damage - damageReduction;
+            }
+
+            else
+            {
+                Console.WriteLine($"{Name} has not defended");
+            }
+        }
+
+        public override void PickUpCoins(bool pickingUpCoins, int coins)
+        {
+            if (pickingUpCoins = true)
+            {
+                NumberOfCoins += coins;
+                Console.WriteLine($"{Name} now has {coins} coins");
+            }
+        }
+
+        public void GainXP(int XP)
+        {
+            PlayerXp += XP;
+            Console.WriteLine($"{Name} now has {XP} XP");
         }
     }
 }
